@@ -2,10 +2,18 @@ package sample;
 
 
 import org.iternine.jeppetto.dao.NoSuchItemException;
+import org.iternine.jeppetto.testsupport.MongoDatabaseProvider;
+import org.iternine.jeppetto.testsupport.TestContext;
 
+import junit.framework.Assert;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sample.model.Category;
+
+import java.util.Date;
 
 
 public class BMSTest {
@@ -14,14 +22,34 @@ public class BMSTest {
     // Variables - Private
     //-------------------------------------------------------------
 
-    private BlogManagementSystem blogManagementSystem = new BlogManagementSystem();
+    private TestContext testContext;
+    private BlogManagementSystem bms;
+
+    private static Logger logger = LoggerFactory.getLogger("jeppetto-sample");
 
 
     //-------------------------------------------------------------
-    // Variables - Private - Static
+    // Methods - Set-Up / Tear-Down
     //-------------------------------------------------------------
 
-    protected static Logger logger = LoggerFactory.getLogger("jeppetto-sample");
+    @Before
+    public void setUp() {
+        testContext = new TestContext("BMSTest.xml",
+                                      "Sample.properties",
+                                      new MongoDatabaseProvider(false));
+
+        this.bms = (BlogManagementSystem) testContext.getBean("blogManagementSystem");
+    }
+
+
+    @After
+    public void tearDown() {
+        if (testContext != null) {
+            testContext.close();
+        }
+
+        this.bms = null;
+    }
 
 
     //-------------------------------------------------------------
@@ -30,10 +58,62 @@ public class BMSTest {
 
     @Test
     public void createBlogAndGetTitle()
-            throws NoSuchItemException {
-        String blogId = blogManagementSystem.createBlog("Jeppetto Time!", "The blog that shows you the ins and outs of Jeppetto.");
-        String retrievedTitle = blogManagementSystem.getBlogTitle(blogId);
+            throws NoSuchItemException, BMSException {
+        String blogId = bms.createBlog("Jeppetto Time", "DAOs in a Jiffy!", Category.Programming);
+        String retrievedTitle = bms.getBlogTitle(blogId);
 
         logger.info("Created blog with id '{}' and it has title '{}'", blogId, retrievedTitle);
+    }
+
+    @Test
+    public void getNewlyCreatedBlogDate()
+            throws BMSException {
+        bms.createBlog("Jeppetto Time", "DAOs in a Jiffy!", Category.Programming);
+
+        Date date = bms.getBlogCreatedDate("Jeppetto Time", Category.Programming);
+
+        Assert.assertTrue(date.before(new Date()));
+    }
+
+
+    @Test
+    public void failToFindBlogDate()
+            throws BMSException {
+        bms.createBlog("Jeppetto Time", "DAOs in a Jiffy!", Category.Programming);
+
+        Date date = bms.getBlogCreatedDate("Jeppetto Time", Category.Food);
+
+        Assert.assertNull(date);
+    }
+
+
+    @Test
+    public void listBlogTitlesByCategory()
+            throws BMSException {
+        bms.createBlog("Jeppetto Time", "DAOs in a Jiffy!", Category.Programming);
+        bms.createBlog("Noodling about Needling", "Needlepoint FTW!", Category.Hobbies);
+        bms.createBlog("My Sweet Tooth", "Cookie Monster's guide to delectable desserts.", Category.Food);
+        bms.createBlog("Curling IS a Sport", "Canada's other great export.", Category.Hobbies);
+
+        for (Category category : Category.values()) {
+            Iterable<String> categoryTitles = bms.getBlogTitlesForCategory(category);
+
+            logger.info("Blogs for category '{}':", category);
+            for (String categoryTitle : categoryTitles) {
+                logger.info("\t" + categoryTitle);
+            }
+        }
+    }
+
+
+    @Test
+    public void verifyBlogCount()
+            throws BMSException {
+        bms.createBlog("Jeppetto Time", "DAOs in a Jiffy!", Category.Programming);
+        bms.createBlog("Noodling about Needling", "Needlepoint FTW!", Category.Hobbies);
+        bms.createBlog("My Sweet Tooth", "Cookie Monster's guide to delectable desserts.", Category.Food);
+        bms.createBlog("Curling IS a Sport", "Canada's other great export.", Category.Hobbies);
+
+        Assert.assertEquals(4, bms.totalCount());
     }
 }

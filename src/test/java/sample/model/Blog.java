@@ -14,6 +14,7 @@ public class Blog {
     private String title;
     private String description;
     private Date createdDate;
+    private Category category;
 
 
     //-------------------------------------------------------------
@@ -57,5 +58,15 @@ public class Blog {
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+    }
+
+
+    public Category getCategory() {
+        return category;
+    }
+
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }

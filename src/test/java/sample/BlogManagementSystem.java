@@ -3,61 +3,45 @@ package sample;
 
 import sample.model.Blog;
 import sample.model.BlogDAO;
+import sample.model.Category;
 
-import org.iternine.jeppetto.dao.DAOBuilder;
 import org.iternine.jeppetto.dao.NoSuchItemException;
-import org.iternine.jeppetto.dao.QueryModelDAO;
-import org.iternine.jeppetto.dao.mongodb.MongoDBQueryModelDAO;
 
-import com.mongodb.Mongo;
-
-import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 
 
 public class BlogManagementSystem {
 
     //-------------------------------------------------------------
-    // Variables - Private - Static
+    // Variables - Private
     //-------------------------------------------------------------
 
-    private static BlogDAO blogDAO;
-
-
-    //-------------------------------------------------------------
-    // Constructors
-    //-------------------------------------------------------------
-
-    static {
-        try {
-            //noinspection RedundantCast,unchecked
-            blogDAO = DAOBuilder.buildDAO(Blog.class,
-                                          BlogDAO.class,
-                                          (Class<? extends QueryModelDAO<Blog, String>>) MongoDBQueryModelDAO.class.asSubclass(QueryModelDAO.class),
-                                          new HashMap<String, Object>() {{
-                                              put("db", new Mongo().getDB("sample"));
-                                          }});
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
+    private BlogDAO blogDAO;
 
 
     //-------------------------------------------------------------
     // Methods - Public
     //-------------------------------------------------------------
 
-    public String createBlog(String title, String description) {
+    public String createBlog(String title, String description, Category category)
+            throws BMSException {
+        Blog preExistingBlog = blogDAO.findByTitle(title);
+
+        if (preExistingBlog != null) {
+            throw new BMSException("Blog with title " + title + " already exists!  Please pick something else.");
+        }
+
         Blog blog = new Blog();
         blog.setTitle(title);
         blog.setDescription(description);
         blog.setCreatedDate(new Date());
+        blog.setCategory(category);
 
         blogDAO.save(blog);
 
-        return blog.getId();  // after save() is called, the blog object will be assigned an id
+        return blog.getId();
     }
 
 
@@ -68,4 +52,38 @@ public class BlogManagementSystem {
         return retrieved.getTitle();
     }
 
+
+    public Date getBlogCreatedDate(String title, Category category) {
+        try {
+            return blogDAO.findByTitleAndCategory(title, category).getCreatedDate();
+        } catch (NoSuchItemException e) {
+            return null;
+        }
+    }
+
+
+    public List<String> getBlogTitlesForCategory(Category category) {
+        Iterable<Blog> blogs = blogDAO.findByCategory(category);
+        List<String> titles = new ArrayList<String>();
+
+        for (Blog blog : blogs) {
+            titles.add(blog.getTitle());
+        }
+
+        return titles;
+    }
+
+
+    public int totalCount() {
+        return blogDAO.countBy();
+    }
+
+
+    //-------------------------------------------------------------
+    // Methods - IoC
+    //-------------------------------------------------------------
+
+    public void setBlogDAO(BlogDAO blogDAO) {
+        this.blogDAO = blogDAO;
+    }
 }

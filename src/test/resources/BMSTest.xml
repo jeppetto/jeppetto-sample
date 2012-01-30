@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+    <!-- =================== Mongo Server =================== -->
+
+    <bean id="mongo" class="com.mongodb.Mongo">
+        <constructor-arg index="0" value="${mongodb.host}"/>
+        <constructor-arg index="1" value="${mongodb.port}"/>
+    </bean>
+
+
+    <!-- =================== Mongo DBs =================== -->
+
+    <bean id="mongoDb" class="com.mongodb.DB" factory-bean="mongo" factory-method="getDB">
+        <constructor-arg index="0" value="${mongodb.dbname}"/>
+    </bean>
+
+
+    <!-- =================== Mongo DAOs =================== -->
+
+    <bean id="blogDAO" class="org.iternine.jeppetto.dao.DAOBuilder" factory-method="buildDAO">
+        <constructor-arg index="0" value="sample.model.Blog"/>
+        <constructor-arg index="1" value="sample.model.BlogDAO"/>
+        <constructor-arg index="2" value="org.iternine.jeppetto.dao.mongodb.MongoDBQueryModelDAO"/>
+        <constructor-arg index="3">
+            <map>
+                <entry key="db" value-ref="mongoDb"/>
+                <entry key="showQueries" value="false"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+
+    <!-- =================== Service Class =================== -->
+
+    <bean id="blogManagementSystem" class="sample.BlogManagementSystem">
+        <property name="blogDAO" ref="blogDAO"/>
+    </bean>
+</beans>
