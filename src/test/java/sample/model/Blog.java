@@ -15,6 +15,7 @@ public class Blog {
     private String title;
     private String description;
     private Date createdDate;
+    private Date lastUpdatedDate;
     private Category category;
     private List<BlogPost> blogPosts;
 
@@ -60,6 +61,16 @@ public class Blog {
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+    }
+
+
+    public Date getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+
+    public void setLastUpdatedDate(Date lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
 

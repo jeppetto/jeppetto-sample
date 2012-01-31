@@ -33,11 +33,14 @@ public class BlogManagementSystem {
         if (preExistingBlog != null) {
             throw new BMSException("Blog with title " + title + " already exists!  Please pick something else.");
         }
+        
+        Date now = new Date();
 
         Blog blog = new Blog();
         blog.setTitle(title);
         blog.setDescription(description);
-        blog.setCreatedDate(new Date());
+        blog.setCreatedDate(now);
+        blog.setLastUpdatedDate(now);
         blog.setCategory(category);
 
         blogDAO.save(blog);
@@ -90,11 +93,15 @@ public class BlogManagementSystem {
             throw new BMSException("No blog with id '{}' exists.");
         }
 
+        Date now = new Date();
+
+        blog.setLastUpdatedDate(now);
+
         BlogPost blogPost = new BlogPost();
         blogPost.setTitle(title);
         blogPost.setBody(body);
         blogPost.setAuthor(author);
-        blogPost.setDate(new Date());
+        blogPost.setDate(now);
 
         List<BlogPost> blogPosts = blog.getBlogPosts();
 
@@ -126,6 +133,18 @@ public class BlogManagementSystem {
         Blog blog = blogDAO.findById(blogId);
 
         return (blog == null || blog.getBlogPosts() == null) ? 0 : blog.getBlogPosts().size();
+    }
+    
+    
+    public List<String> paginateAuthorTitles(String author, int page, int pageSize) {
+        Iterable<Blog> blogs = blogDAO.paginateAuthorContributedBlogs(author, pageSize, (page - 1) * pageSize);
+        List<String> titles = new ArrayList<String>(pageSize);
+
+        for (Blog blog : blogs) {
+            titles.add(blog.getTitle());
+        }
+
+        return titles;
     }
 
 
