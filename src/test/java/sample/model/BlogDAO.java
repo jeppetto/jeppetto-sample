@@ -18,4 +18,7 @@ public interface BlogDAO extends GenericDAO<Blog, String> {
 
 
     int countBy();
+
+
+    Iterable<Blog> findByHavingBlogPostsWithAuthor(String author);
 }

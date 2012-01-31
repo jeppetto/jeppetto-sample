@@ -2,6 +2,7 @@ package sample.model;
 
 
 import java.util.Date;
+import java.util.List;
 
 
 public class Blog {
@@ -15,6 +16,7 @@ public class Blog {
     private String description;
     private Date createdDate;
     private Category category;
+    private List<BlogPost> blogPosts;
 
 
     //-------------------------------------------------------------
@@ -68,5 +70,15 @@ public class Blog {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+
+    public List<BlogPost> getBlogPosts() {
+        return blogPosts;
+    }
+
+
+    public void setBlogPosts(List<BlogPost> blogPosts) {
+        this.blogPosts = blogPosts;
     }
 }

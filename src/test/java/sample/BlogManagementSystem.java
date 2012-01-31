@@ -3,6 +3,7 @@ package sample;
 
 import sample.model.Blog;
 import sample.model.BlogDAO;
+import sample.model.BlogPost;
 import sample.model.Category;
 
 import org.iternine.jeppetto.dao.NoSuchItemException;
@@ -76,6 +77,55 @@ public class BlogManagementSystem {
 
     public int totalCount() {
         return blogDAO.countBy();
+    }
+
+
+    public void addBlogPost(String blogId, String title, String body, String author)
+            throws BMSException {
+        Blog blog;
+
+        try {
+            blog = blogDAO.findById(blogId);
+        } catch (NoSuchItemException e) {
+            throw new BMSException("No blog with id '{}' exists.");
+        }
+
+        BlogPost blogPost = new BlogPost();
+        blogPost.setTitle(title);
+        blogPost.setBody(body);
+        blogPost.setAuthor(author);
+        blogPost.setDate(new Date());
+
+        List<BlogPost> blogPosts = blog.getBlogPosts();
+
+        if (blogPosts == null) {
+            blogPosts = new ArrayList<BlogPost>();
+
+            blog.setBlogPosts(blogPosts);
+        }
+
+        blogPosts.add(blogPost);
+
+        blogDAO.save(blog);
+    }
+
+
+    public List<String> getBlogTitlesWithPostsFromAuthor(String author) {
+        Iterable<Blog> blogs = blogDAO.findByHavingBlogPostsWithAuthor(author);
+        List<String> titles = new ArrayList<String>();
+
+        for (Blog blog : blogs) {
+            titles.add(blog.getTitle());
+        }
+
+        return titles;
+    }
+
+
+    public int getBlogPostCountForBlog(String blogId) {
+        Blog blog = blogDAO.findById(blogId);
+
+        return (blog == null || blog.getBlogPosts() == null) ? 0 : blog.getBlogPosts().size();
     }
 
 

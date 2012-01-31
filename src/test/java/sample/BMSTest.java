@@ -1,6 +1,8 @@
 package sample;
 
 
+import sample.model.Category;
+
 import org.iternine.jeppetto.dao.NoSuchItemException;
 import org.iternine.jeppetto.testsupport.MongoDatabaseProvider;
 import org.iternine.jeppetto.testsupport.TestContext;
@@ -11,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sample.model.Category;
 
 import java.util.Date;
 
@@ -115,5 +116,30 @@ public class BMSTest {
         bms.createBlog("Curling IS a Sport", "Canada's other great export.", Category.Hobbies);
 
         Assert.assertEquals(4, bms.totalCount());
+    }
+
+
+    @Test
+    public void addAnEntryAndVerifyCount()
+            throws BMSException {
+        String blogId = bms.createBlog("Jeppetto Time", "DAOs in a Jiffy!", Category.Programming);
+        bms.addBlogPost(blogId, "Jeppetto blog's first entry!", "Woot!", "JT");
+
+        Assert.assertEquals(1, bms.getBlogPostCountForBlog(blogId));
+    }
+
+
+    @Test
+    public void verifyCountOfBlogsHavingPostsWithAuthor()
+            throws BMSException {
+        String jeppettoBlogId = bms.createBlog("Jeppetto Time", "DAOs in a Jiffy!", Category.Programming);
+        String needlepointBlogId = bms.createBlog("Noodling about Needling", "Needlepoint FTW!", Category.Hobbies);
+
+        bms.addBlogPost(jeppettoBlogId, "Jeppetto blog's first entry!", "Woot!", "JT");
+        bms.addBlogPost(jeppettoBlogId, "Another Jeppetto entry.", "Phil here...", "Phil");
+        bms.addBlogPost(needlepointBlogId, "Needles: Not Just Pokers", "There can be a misconception...", "Phil");
+
+        Assert.assertEquals(1, bms.getBlogTitlesWithPostsFromAuthor("JT").size());
+        Assert.assertEquals(2, bms.getBlogTitlesWithPostsFromAuthor("Phil").size());
     }
 }
