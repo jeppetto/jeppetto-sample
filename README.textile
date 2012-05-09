@@ -1,0 +1,16 @@
+To run the Jeppetto sample through its iterations, clone the jeppetto-sample project:
+
+bq. git clone git://github.com/jeppetto/jeppetto-sample.git
+
+And checkout the "iteration" you are interested in.  For example, to see what "iteration 2" looks like:
+
+bq. git co iteration2
+
+To get back to latest version:
+
+bq. git co master
+
+To see the list of all available iterations:
+
+bq. git tag
+
